@@ -3,33 +3,39 @@
 function update_gitignore {
     base_directory=$1
     filedir=$2
-
-    if [ -f "$base_directory/.gitignore" ]; then
-        echo -e ".gitignore file created at Base \n"
-    fi
-    echo $filedir > "$base_directory/.gitignore"
+    echo $filedir >> "$base_directory/.gitignore"
 }
-
 
 function scan_files {
     base_directory=$1
     filesz_limit=$2
     update_gitignore=$3
-    echo -e "Selected Directory : $base_directory \n"
-    echo -e "File size limit : $filesz_limit \n"
-    echo "-------------------------------------"
+    folder_basename=$4
+    echo "Selected Directory : $base_directory"
+    echo "File size limit : $filesz_limit"
     
     find $base_directory -type d | while read -r innerdir
     do
-        echo -e "Dir is : $innerdir \n"
-        echo "-----------------------"
-        files=$(find "$innerdir" -type f)
+        skipdir=".git"
+        if [ -z "${innerdir##*$skipdir*}" ] ; then
+            echo "Skipping $innerdir"
+            continue
+        fi
+        echo "---------------*----------------"
+        echo -e "Current Dir : $innerdir"
+        echo "---------------*----------------"
+        files=$(find $innerdir -type f)
         for filename in $files; do
+            if [ -z "${filename##*$skipdir*}" ] ; then
+                echo "Skipping $filename"
+                continue
+            fi
             filesz=$(stat -c %s $filename)
-            if [ $filesz -gt $filesz_limit && $update_gitignore ]; then
-                update_gitignore $base_directory $filename
-                echo "File : $filename | Size : $filesz - TRNSFRD"
-            elif [ $filesz -gt filesz_limit ]; then
+            if [[ $filesz -gt $filesz_limit && $update_gitignore = true ]]; then
+                inner_dirbasename="${filename#*$folder_basename/}"
+                update_gitignore $base_directory $inner_dirbasename
+                echo "File : $filename | Size : $filesz - TRNSFRD - $inner_dirbasename"
+            elif [[ $filesz -gt filesz_limit ]]; then
                 echo "File : $filename | Size : $filesz"
             fi
         done
@@ -38,10 +44,15 @@ function scan_files {
 }
 
 
-if [ "$#" -ne 1 ]; then
+if [ "$#" -ne 2 ]; then
     echo "Usage: $0 <Repoistory Directory>"
     exit 1
 fi
 
 search_folder=$1
-echo $search_folder
+size_limit=$2
+update_gitignore=true
+folder_basename=$(basename $search_folder)
+
+# echo $search_folder $size_limit
+scan_files $search_folder $size_limit $update_gitignore $folder_basename
