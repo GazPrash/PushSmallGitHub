@@ -1,4 +1,4 @@
-# PushSmall - Automate Gitignore for your repos!
+# PushSmall - Automate .gitignore for your repos!
 
 ## Overview
 
