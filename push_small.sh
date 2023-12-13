@@ -11,6 +11,7 @@ function scan_files {
     filesz_limit=$2
     update_gitignore=$3
     folder_basename=$4
+    echo "---------------*----------------"
     echo "Selected Directory : $base_directory"
     echo "File size limit : $filesz_limit"
     
@@ -50,9 +51,10 @@ if [ "$#" -ne 2 ]; then
 fi
 
 search_folder=$1
-size_limit=$2
+declare -i size_limit=$2
+declare -i byte_to_mb=100000
 update_gitignore=true
 folder_basename=$(basename $search_folder)
 
-# echo $search_folder $size_limit
-scan_files $search_folder $size_limit $update_gitignore $folder_basename
+# echo $search_folder $((size_limit * byte_to_mb))
+scan_files $search_folder $((size_limit * byte_to_mb)) $update_gitignore $folder_basename
