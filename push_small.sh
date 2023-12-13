@@ -52,7 +52,7 @@ fi
 
 search_folder=$1
 declare -i size_limit=$2
-declare -i byte_to_mb=100000
+declare -i byte_to_mb=1000000
 update_gitignore=true
 folder_basename=$(basename $search_folder)
 
